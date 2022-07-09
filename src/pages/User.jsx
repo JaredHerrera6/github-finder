@@ -5,16 +5,25 @@ import GithubContext from '../context/github/GithubContext'
 import {useParams} from 'react-router-dom'
 import{Link} from 'react-router-dom'
 import Spinner from '../components/layout/Spinner'
+import RepoList from '../components/repos/RepoList'
+import {getUser,getUserAndRepos,getUserRepos} from '../context/github/GithubActions'
 
 
 function User() {
-  const {getUser, user,loading} = useContext(GithubContext)
+  const {user,loading, repos,dispatch} = useContext(GithubContext)
 
   const params = useParams()
 
   useEffect(() =>{
-    getUser(params.login)
-  },[]) //MAke sure to add this empty function to only run once
+    dispatch({type:'SET_LOADING'})
+    const getUserData = async () => {
+        const userData = await getUserAndRepos(params.login)
+        dispatch({type:'GET_USER_AND_REPOS',payload:userData})
+    }
+    getUserData()
+  },[dispatch, params.login]) //MAke sure to add this empty function to only run once
+  //fine to use these as dependencie becasue these things are not constantly changing
+  // so we can pass these as dependencies
 
   const {
     name,
@@ -162,10 +171,10 @@ function User() {
             </div>
           </div>
         </div>
+        <RepoList repos = {repos}/>
       </div>
 
     </>
   )
-  
 }
 export default User
